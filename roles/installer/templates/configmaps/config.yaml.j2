@@ -261,12 +261,14 @@ data:
         allowruntimeauth: true
         allowruntimepod: true
         allowruntimeparams: true
+        streammethod: tcp
     - work-kubernetes:
         worktype: kubernetes-incluster-auth
         authmethod: incluster
         allowruntimeauth: true
         allowruntimepod: true
         allowruntimeparams: true
+        streammethod: tcp
     - tls-client:
         cert: /etc/receptor/tls/receptor.crt
         key: /etc/receptor/tls/receptor.key

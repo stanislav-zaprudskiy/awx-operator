@@ -1,12 +1,81 @@
 #!/usr/bin/env bash
 
-while true; do
-  rnd=$(( $RANDOM % 100 ))
-  printf "pretend doing something #%s\n" \
-    "$rnd"
-  if [[ $rnd -lt 98 ]]; then
-    sleep 1
-  else
-    break
+set -e
+
+declare -A env
+
+# Sleep duration between subsequent checks for running jobs.
+# JOBS_CHECK_RETRY_SEC=5
+env[JOBS_CHECK_RETRY_SEC]=${JOBS_CHECK_RETRY_SEC:-30}
+
+# Number of overall attempts to check for running jobs to finish. When not set
+# it is automatically calculated based off `JOBS_CHECK_RETRY_SEC`to result into
+# _about_ 3h.
+# JOBS_CHECK_ATTEMPTS=3
+env[JOBS_CHECK_ATTEMPTS]=${JOBS_CHECK_ATTEMPTS:-$(( 60 * 60 * 3 / ${env[JOBS_CHECK_RETRY_SEC]} ))}
+
+for e in ${!env[*]}; do
+  export $e="${env[$e]}"
+done
+
+instance=$( \
+  awx \
+    --conf.format=json \
+    instances get \
+    "$(cat /etc/hostname)" \
+)
+
+if [[ $(echo "$instance" | jq -e -r ".enabled") == "true" ]]; then
+    awx \
+      --conf.format=json \
+      instances modify \
+      --enabled=false \
+      $(echo "$instance" | jq -e -r ".id") > /dev/null \
+    && printf "Disabled \"%s\" AWX instance so that it doesn't pick up any new jobs\n" \
+         "$(echo "$instance" | jq -e -r ".hostname")"
+fi
+
+attempt=1
+waiting_successful=true
+jobs_count=99
+while [[ $jobs_count -gt 0 ]]; do
+  jobs=$( \
+    awx \
+      --conf.format=json \
+      unified_jobs list \
+      --controller_node=$(echo "$instance" | jq -e -r ".hostname") \
+      --status=running \
+      --all \
+  )
+
+  jobs_count=$(echo "$jobs" | jq -e -r ".count")
+  if [[ $jobs_count -gt 0 ]]; then
+    jobs_urls="$(echo "$jobs" | jq -e -r ".results[] | [.url] | @csv" | paste -sd " ")"
+    if [[ $attempt -ge $JOBS_CHECK_ATTEMPTS ]]; then
+      printf "%d/%d: No more attempts left, but the following %d jobs are still running: %s\n" \
+        $attempt $JOBS_CHECK_ATTEMPTS $jobs_count \
+        "$jobs_urls"
+      waiting_successful=false
+      break
+    else
+      printf "%d/%d: Waiting %ds before the next check to see if the following %d jobs have finished: %s\n" \
+        $attempt $JOBS_CHECK_ATTEMPTS $JOBS_CHECK_RETRY_SEC $jobs_count \
+        "$jobs_urls"
+      attempt=$(( $attempt + 1 ))
+      sleep $JOBS_CHECK_RETRY_SEC
+    fi
   fi
 done
+
+if $waiting_successful; then
+  printf "Waiting for running jobs to finish completed successfully\n"
+fi
+
+# TODO: remove below
+awx \
+  --conf.format=json \
+  instances modify \
+  --enabled=true \
+  $(echo "$instance" | jq -e -r ".id") > /dev/null
+
+$waiting_successful

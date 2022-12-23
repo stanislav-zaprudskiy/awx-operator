@@ -450,7 +450,7 @@ spec:
         {{ security_context_settings | to_nice_yaml | indent(8) }}
 {% endif %}
 {% endif %}
-      terminationGracePeriodSeconds: 60
+      terminationGracePeriodSeconds: 600
       volumes:
 {% if bundle_ca_crt %}
         - name: "ca-trust-extracted"

@@ -17,6 +17,9 @@ log "report progress every: \"%ss\"\n" \
   "$report_every"
 
 n=0
+# TODO: check if master is still running, and fail otherwise - as master could
+# fail prematurely and then there is no sense to wait for the marker file
+# (subsequently, master needs to be updated to report its running status)
 while ! [[ -f $marker_file ]]; do
   if [[ $(($n % $report_every)) -eq 0 ]]; then
     log "waiting for marker file to be accessible\n"

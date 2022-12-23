@@ -214,6 +214,7 @@
   register: this_deployment_result
 
 - block:
+    # TODO: account terminationGracePeriodSeconds
     - name: Delete pod to reload a resource configuration
       k8s:
         api_version: v1
