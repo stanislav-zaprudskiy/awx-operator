@@ -168,6 +168,7 @@
   register: tower_resources_result
   loop:
     - 'configmaps/config'
+    - 'configmaps/pre-stop-scripts'
     - 'secrets/app_credentials'
     - 'rbac/service_account'
     - 'storage/persistent'
@@ -221,6 +222,7 @@
         namespace: '{{ ansible_operator_meta.namespace }}'
         name: '{{ tower_pod_name }}'
         wait: yes
+        wait_timeout: "{{ tower_pod['resources'][0]['spec']['terminationGracePeriodSeconds'] }}"
       when:
         - tower_resources_result.changed
         - tower_pod_name | length
