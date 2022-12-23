@@ -1,0 +1,30 @@
+#/usr/bin/env bash
+
+PRE_STOP_LOG_ROLE="${PRE_STOP_LOG_ROLE:-waiter}"
+source $(dirname "$0")/termination-env
+
+{
+
+log "hook has started\n"
+
+log "marker file to check: \"%s\"\n" \
+  "$marker_file"
+
+log "sleep between re-checks: \"%ss\"\n" \
+  "$recheck_sleep"
+
+log "report progress every: \"%ss\"\n" \
+  "$report_every"
+
+n=0
+while ! [[ -f $marker_file ]]; do
+  if [[ $(($n % $report_every)) -eq 0 ]]; then
+    log "waiting for marker file to be accessible\n"
+  fi
+  n=$(($n + 1))
+  sleep $recheck_sleep
+done
+
+log "marker file found, exiting to proceed to termination\n"
+
+} > "$stdout" 2> "$stderr"

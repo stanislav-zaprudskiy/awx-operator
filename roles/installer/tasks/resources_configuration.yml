@@ -168,6 +168,7 @@
   register: tower_resources_result
   loop:
     - 'configmaps/config'
+    - 'configmaps/pre-stop-scripts'
     - 'secrets/app_credentials'
     - 'rbac/service_account'
     - 'storage/persistent'
@@ -240,6 +241,7 @@
         - _new_pod['resources'] | length
         - _new_pod['resources'][0]['metadata']['name'] != tower_pod_name
       delay: 5
+      # TODO: account terminationGracePeriodSeconds
       retries: 60
 
     - name: Update new resource pod name as a variable.

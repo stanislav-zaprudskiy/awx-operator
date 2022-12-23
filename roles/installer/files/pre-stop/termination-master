@@ -1,0 +1,29 @@
+#/usr/bin/env bash
+
+PRE_STOP_LOG_ROLE="${PRE_STOP_LOG_ROLE:-master}"
+source $(dirname "$0")/termination-env
+
+{
+
+log "hook has started\n"
+
+set -o pipefail
+$(dirname "$0")/termination-handler 2>&1 | while IFS= read -r line; do
+  log "%s\n" "$line"
+done
+ec=$?
+set +o pipefail
+
+if [[ $ec -ne 0 ]]; then
+  log "\"%s\" script has failed with \"%d\" exit code, failing the hook script too\n" \
+    "termination-handler" \
+    $ec
+  exit $ec
+fi
+
+log "done! generating \"%s\" file allowing to proceed to termination\n" \
+  "$marker_file"
+
+touch "$marker_file"
+
+} > "$stdout" 2> "$stderr"
