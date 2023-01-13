@@ -240,15 +240,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: CONTROLLER_HOST
-              value: "http://localhost:8052"
-            - name: CONTROLLER_USERNAME
-              value: "{{ admin_user }}"
-            - name: CONTROLLER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ __admin_password_secret['resources'][0]['metadata']['name'] }}"
-                  key: password
             - name: UWSGI_MOUNT_PATH
               value: "{{ ingress_path }}"
 {% if development_mode | bool %}
