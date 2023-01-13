@@ -5,25 +5,46 @@ source $(dirname "$0")/termination-env
 
 {
 
-log "hook has started\n"
+log "the hook has started: handler=\"%s\", heartbeat_file=\"%s\", bailout_file=\"%s\"" \
+  "$handler" \
+  "$heartbeat_file" \
+  "$bailout_file"
 
 set -o pipefail
-$(dirname "$0")/termination-handler 2>&1 | while IFS= read -r line; do
-  log "%s\n" "$line"
+$handler 2>&1 | while IFS= read -r line; do
+  # we check the files here and break early, but overall script termination
+  # happens later - as we need to distinguish between files detection and
+  # command failure, while bash doesn't offer a simple way to do this here
+  # inside the loop
+  [[ -f $bailout_file ]] && break
+  [[ -f $marker_file ]] && break
+
+  log "%s" "$line"
+  touch "$heartbeat_file"
 done
 ec=$?
 set +o pipefail
 
-if [[ $ec -ne 0 ]]; then
-  log "\"%s\" script has failed with \"%d\" exit code, failing the hook script too\n" \
-    "termination-handler" \
+# process various cases in specific order
+if [[ -f $bailout_file ]]; then
+  log "\"%s\" file has been detected, accepting bail out signal and failing the hook script" \
+    "$bailout_file"
+  exit 1
+elif [[ -f $marker_file ]]; then
+  log "done! \"%s\" file has been detected, assuming some other instance of the script has run to completion" \
+    "$marker_file"
+  exit 0
+elif [[ $ec -ne 0 ]]; then
+  log "\"%s\" command has failed with \"%d\" exit code, failing the hook script too" \
+    "$handler" \
     $ec
+  # signal others to bail out
+  touch "$bailout_file"
   exit $ec
+else
+  log "done! generating \"%s\" file allowing to proceed to termination" \
+    "$marker_file"
+  touch "$marker_file"
 fi
-
-log "done! generating \"%s\" file allowing to proceed to termination\n" \
-  "$marker_file"
-
-touch "$marker_file"
 
 } > "$stdout" 2> "$stderr"

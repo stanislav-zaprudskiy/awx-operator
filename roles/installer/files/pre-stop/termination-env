@@ -1,17 +1,37 @@
+# file, which when exists, indicates that `master` script has successfully
+# completed pre-stop script execution
 marker_file="${PRE_STOP_MARKER_FILE:-/var/lib/pre-stop/.termination_marker}"
+
+# file which the running `master` script continuously updates (mtime) to
+# indicate it's still running. this file is then read by `watcher`s to
+# understand if they still have to wait for `termination_marker`
+heartbeat_file="${PRE_STOP_HEARTBEAT_FILE:-/var/lib/pre-stop/.heartbeat}"
+
+# file which:
+# * `watcher`s create when they bail out because they didn't see the
+#   `heartbeat_file` to be updated within `$recheck_sleep *
+#   $heartbeat_failed_threshold`;
+# * `master` creates when its handler command fails;
+# when scripts see such file, they also give up
+bailout_file="${PRE_STOP_BAILOUT_FILE:-/var/lib/pre-stop/.bailout}"
+heartbeat_failed_threshold="${PRE_STOP_HEARTBEAT_FAILED_THRESHOLD:-2}"
+
+# where the scripts stdout/stderr are streamed
 stdout="${PRE_STOP_STDOUT:-/proc/1/fd/1}"
 stderr="${PRE_STOP_STDERR:-/proc/1/fd/2}"
+
+# command the `master` script executes, which when successfully finishes,
+# causes the script to create the `marker_file`
+handler="${PRE_STOP_HANDLER:-awx-manage disable_instance --wait --retry=inf}"
+
 log_prefix="${PRE_STOP_LOG_PREFIX:-preStop.exec}"
 [[ -n ${PRE_STOP_LOG_ROLE} ]] && log_prefix="${log_prefix}] [$PRE_STOP_LOG_ROLE"
 
+# interval at which `watcher`s check for `marker_file` presence
 recheck_sleep="${PRE_STOP_RECHECK_SLEEP:-1}"
+# interval at which `watcher`s report into $stdout that they are still watching
 report_every="${PRE_STOP_REPORT_EVERY:-30}"
 
 function log {
-  printf "[%s] $1" "$log_prefix" "${@:2}"
+  printf "[%s] $1\n" "$log_prefix" "${@:2}"
 }
-
-log "hook stdout=\"%s\" stderr=\"%s\"\n" \
-  "$stdout" \
-  "$stderr" \
-| tee "$stdout"
