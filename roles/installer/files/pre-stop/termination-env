@@ -14,7 +14,7 @@ heartbeat_file="${PRE_STOP_HEARTBEAT_FILE:-/var/lib/pre-stop/.heartbeat}"
 # * `master` creates when its handler command fails;
 # when scripts see such file, they also give up
 bailout_file="${PRE_STOP_BAILOUT_FILE:-/var/lib/pre-stop/.bailout}"
-heartbeat_failed_threshold="${PRE_STOP_HEARTBEAT_FAILED_THRESHOLD:-2}"
+heartbeat_failed_threshold="${PRE_STOP_HEARTBEAT_FAILED_THRESHOLD:-60}"
 
 # where the scripts stdout/stderr are streamed
 stdout="${PRE_STOP_STDOUT:-/proc/1/fd/1}"

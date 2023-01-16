@@ -10,8 +10,11 @@ log "the hook has started: handler=\"%s\", heartbeat_file=\"%s\", bailout_file=\
   "$heartbeat_file" \
   "$bailout_file"
 
+touch "$heartbeat_file"
+
 set -o pipefail
 $handler 2>&1 | while IFS= read -r line; do
+  log "looping..."
   # we check the files here and break early, but overall script termination
   # happens later - as we need to distinguish between files detection and
   # command failure, while bash doesn't offer a simple way to do this here
