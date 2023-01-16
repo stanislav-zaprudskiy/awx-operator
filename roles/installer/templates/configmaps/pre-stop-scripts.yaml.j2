@@ -16,7 +16,5 @@ data:
     {{ lookup("file", "files/pre-stop/termination-master") | indent(width=4) | trim }}
   termination-waiter: |
     {{ lookup("file", "files/pre-stop/termination-waiter") | indent(width=4) | trim }}
-  termination-handler: |
-    {{ lookup("file", "files/pre-stop/termination-handler") | indent(width=4) | trim }}
   termination-env: |
     {{ lookup("file", "files/pre-stop/termination-env") | indent(width=4) | trim }}
