@@ -5,11 +5,14 @@ source $(dirname "$0")/termination-env
 
 {
 
-log "the hook has started: marker_file=\"%s\", bailout_file=\"%s\", recheck_sleep=\"%d\", report_every=\"%d\"" \
-  "$marker_file" \
-  "$bailout_file" \
-  "$recheck_sleep" \
-  "$report_every"
+log "the hook has started: %s" \
+  "$(parameters_sting \
+    "marker_file" \
+    "heartbeat_file" \
+    "bailout_file" \
+    "recheck_sleep" \
+    "report_every" \
+  )"
 
 n=0
 while ! [[ -f $marker_file ]]; do

@@ -22,7 +22,7 @@ stderr="${PRE_STOP_STDERR:-/proc/1/fd/2}"
 
 # command the `master` script executes, which when successfully finishes,
 # causes the script to create the `marker_file`
-handler=(${PRE_STOP_HANDLER:-bash -c "PYTHONUNBUFFERED=x awx-manage disable_instance --wait --retry=inf"})
+handler="${PRE_STOP_HANDLER:-bash -c "PYTHONUNBUFFERED=x awx-manage disable_instance --wait --retry=inf"}"
 
 log_prefix="${PRE_STOP_LOG_PREFIX:-preStop.exec}"
 [[ -n ${PRE_STOP_LOG_ROLE} ]] && log_prefix="${log_prefix}] [$PRE_STOP_LOG_ROLE"
@@ -34,4 +34,10 @@ report_every="${PRE_STOP_REPORT_EVERY:-30}"
 
 function log {
   printf "[%s] $1\n" "$log_prefix" "${@:2}"
+}
+
+function parameters_sting {
+  for param in "$@"; do
+    printf "%s=\"%s\"\n" "$param" "${!param}"
+  done | paste -s -d ' '
 }

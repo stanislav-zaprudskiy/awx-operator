@@ -5,8 +5,8 @@ used:
 temp_dir=$(mktemp -d) \
 && export \
   PRE_STOP_RECHECK_SLEEP=1 \
-  PRE_STOP_HANDLER_SLEEP=1 \
-  PRE_STOP_HANDLER="$PWD/roles/installer/files/pre-stop/termination-handler" \
+  PRE_STOP_HANDLER_SLEEP=30 \
+  PRE_STOP_HANDLER="bash -c \"FOO=bar $PWD/roles/installer/files/pre-stop/termination-handler\"" \
   PRE_STOP_MARKER_FILE=$temp_dir/.termination_marker \
   PRE_STOP_HEARTBEAT_FILE=$temp_dir/.heartbeat \
   PRE_STOP_BAILOUT_FILE=$temp_dir/.bailout \

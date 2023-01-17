@@ -4,7 +4,7 @@ source $(dirname "$0")/termination-env > /dev/null
 
 while true; do
   rnd=$(( $RANDOM % 100 ))
-  printf "pretend doing something #%s\n" \
+  printf "${FOO}: pretend doing something #%s\n" \
     "$rnd"
   if [[ $rnd -lt 98 ]]; then
     sleep "${PRE_STOP_HANDLER_SLEEP:-$(( $recheck_sleep + $recheck_sleep * ($RANDOM % 2) * 2 ))}"
