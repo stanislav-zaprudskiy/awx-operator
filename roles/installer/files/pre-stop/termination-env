@@ -15,7 +15,7 @@ heartbeat_file="${PRE_STOP_HEARTBEAT_FILE:-/var/lib/pre-stop/.heartbeat}"
 bailout_file="${PRE_STOP_BAILOUT_FILE:-/var/lib/pre-stop/.bailout}"
 heartbeat_threshold="${PRE_STOP_HEARTBEAT_THRESHOLD:-60}"
 
-# where the scripts stdout/stderr are streamed
+# where the scripts' stdout/stderr are streamed
 stdout="${PRE_STOP_STDOUT:-/proc/1/fd/1}"
 stderr="${PRE_STOP_STDERR:-/proc/1/fd/2}"
 
@@ -57,7 +57,8 @@ function check_heartbeat {
   fi
 
   if [[ $delta -gt $heartbeat_threshold ]]; then
-    log "The heartbeat file hasn't been updated within the threshold of %ds, assuming the master is not operating and failing the hook script" \
+    log "The heartbeat file hasn't been updated since %ss, which is above the threshold of %ds, assuming the master is not operating and failing the hook script" \
+      $delta
       $heartbeat_threshold
     touch "$bailout_file"
     exit 1
