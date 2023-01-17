@@ -237,7 +237,7 @@ spec:
               exec:
                 command:
                 - bash
-                - /var/lib/pre-stop/scripts/termination-master
+                - /var/lib/pre-stop/scripts/termination-waiter
 {% endif %}
           env:
             - name: MY_POD_NAMESPACE
@@ -331,7 +331,7 @@ spec:
               exec:
                 command:
                 - bash
-                - /var/lib/pre-stop/scripts/termination-waiter
+                - /var/lib/pre-stop/scripts/termination-master
 {% endif %}
           env:
             - name: SUPERVISOR_WEB_CONFIG_PATH
