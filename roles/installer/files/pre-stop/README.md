@@ -4,8 +4,8 @@ used:
 ```console
 temp_dir=$(mktemp -d) \
 && export \
-  PRE_STOP_RECHECK_SLEEP=1 \
-  PRE_STOP_HANDLER_SLEEP=30 \
+  PRE_STOP_HEARTBEAT_THRESHOLD=2 \
+  PRE_STOP_HANDLER_SLEEP= \
   PRE_STOP_HANDLER="bash -c \"FOO=bar $PWD/roles/installer/files/pre-stop/termination-handler\"" \
   PRE_STOP_MARKER_FILE=$temp_dir/.termination_marker \
   PRE_STOP_HEARTBEAT_FILE=$temp_dir/.heartbeat \

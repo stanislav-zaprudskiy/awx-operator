@@ -5,7 +5,7 @@ source $(dirname "$0")/termination-env
 
 {
 
-log "the hook has started: %s" \
+log "The hook has started: %s" \
   "$(parameters_sting \
     "marker_file" \
     "heartbeat_file" \
@@ -20,7 +20,7 @@ eval "$handler" 2>&1 | while IFS= read -r line; do
   # we check the files here and break early, but overall script termination
   # happens later - as we need to distinguish between files detection and
   # command failure, while bash doesn't offer a simple way to do this here
-  # inside the loop
+  # inside the loop (`exit` does not terminate the script)
   [[ -f $bailout_file ]] && break
   [[ -f $marker_file ]] && break
 
@@ -31,13 +31,10 @@ ec=$?
 set +o pipefail
 
 # process various cases in specific order
-if [[ -f $bailout_file ]]; then
-  log "\"%s\" file has been detected, accepting bail out signal and failing the hook script" \
-    "$bailout_file"
-  exit 1
-elif [[ -f $marker_file ]]; then
-  log "done! \"%s\" file has been detected, assuming some other instance of the script has run to completion" \
-    "$marker_file"
+check_bailout
+
+if [[ -f $marker_file ]]; then
+  log "Done! The marker file has been detected, assuming some other instance of the script has run to completion"
   exit 0
 elif [[ $ec -ne 0 ]]; then
   log "The handler has failed with \"%d\" exit code, failing the hook script too" \
@@ -46,8 +43,7 @@ elif [[ $ec -ne 0 ]]; then
   touch "$bailout_file"
   exit $ec
 else
-  log "done! generating \"%s\" file allowing to proceed to termination" \
-    "$marker_file"
+  log "Done! Generating the marker file allowing to proceed to termination"
   touch "$marker_file"
 fi
 

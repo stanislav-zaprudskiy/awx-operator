@@ -5,7 +5,7 @@ source $(dirname "$0")/termination-env
 
 {
 
-log "the hook has started: %s" \
+log "The hook has started: %s" \
   "$(parameters_sting \
     "marker_file" \
     "heartbeat_file" \
@@ -15,51 +15,19 @@ log "the hook has started: %s" \
   )"
 
 n=0
+checks_started=$(date +%s)
+
 while ! [[ -f $marker_file ]]; do
-  # we check for `bailout_file` before sleep, to fail fast if the file is there
-  if [[ -f $bailout_file ]]; then
-    log "\"%s\" file has been detected, accepting bail out signal and failing the hook script" \
-      "$bailout_file"
-    exit 1
-  fi
+  check_bailout
+  check_heartbeat $checks_started
 
   if [[ $(($n % $report_every)) -eq 0 ]]; then
-    log "waiting for marker file to be accessible"
+    log "Waiting for the marker file to be accessible..."
   fi
   n=$(($n + 1))
   sleep $recheck_sleep
-
-  if [[ $n -ne 0 ]] && { \
-      ! [[ -f $heartbeat_file ]] \
-      || [[ $(( $(date +%s) - $(stat -c %Y "$heartbeat_file") )) -gt $recheck_sleep ]]; \
-    }; then
-    heartbeat_failed_count=$(( $heartbeat_failed_count + 1 ))
-    if [[ $(($n % $report_every)) -eq 0 ]]; then
-      log "WARN: the heartbeat file hasn't been updated %d/%d check iterations in a row" \
-        "$heartbeat_failed_count" \
-        "$heartbeat_failed_threshold"
-    fi
-  else
-    heartbeat_failed_count=0
-  fi
-
-  # we check again for `bailout_file` after sleep, as some other script might
-  # have created it already
-  if [[ -f $bailout_file ]]; then
-    log "\"%s\" file has been detected, accepting bail out signal and failing the hook script" \
-      "$bailout_file"
-    exit 1
-  fi
-
-  if [[ $heartbeat_failed_count -ge $heartbeat_failed_threshold ]]; then
-    log "\"%s\" file hasn't been updated during the last %d iterations, assuming the master is not operating and failing the hook script" \
-      "$heartbeat_file" \
-      $heartbeat_failed_threshold
-    touch "$bailout_file"
-    exit 1
-  fi
 done
 
-log "marker file found, exiting to proceed to termination"
+log "The marker file found, exiting to proceed to termination"
 
 } > "$stdout" 2> "$stderr"
