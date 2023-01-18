@@ -35,7 +35,7 @@ function log {
   printf "[%s] $1\n" "$log_prefix" "${@:2}"
 }
 
-function parameters_sting {
+function parameters_string {
   for param in "$@"; do
     printf "%s=\"%s\"\n" "$param" "${!param}"
   done | paste -s -d ' '

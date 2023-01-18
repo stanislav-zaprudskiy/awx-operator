@@ -6,7 +6,7 @@ source $(dirname "$0")/termination-env
 {
 
 log "The hook has started: %s" \
-  "$(parameters_sting \
+  "$(parameters_string \
     "marker_file" \
     "heartbeat_file" \
     "bailout_file" \
