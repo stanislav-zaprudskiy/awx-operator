@@ -1220,9 +1220,8 @@ following:
 
 * It adds a
   [`PreStop`](https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution)
-  hook script, which will keep AWX Pods in terminating state up to
-  `terminationGracePeriodSeconds` or earlier if the script is finished and
-  normal AWX processes shutdown happend.
+  hook script, which will keep AWX Pods in terminating state until it finished,
+  up to `terminationGracePeriodSeconds`.
 
   > This grace period applies to the total time it takes for both the PreStop
   > hook to execute and for the Container to stop normally
